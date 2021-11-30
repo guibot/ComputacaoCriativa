@@ -30,21 +30,21 @@ void loop()
   if (red_chrono.hasPassed(red_random)) 
   {
     red_ramp.go(random(255), 1000);
-    red_random = random(10000);
+    red_random = random(1000);
     red_chrono.restart();
   }
 
   if (green_chrono.hasPassed(green_random)) 
   {
     green_ramp.go(random(255), 1000);
-    green_random = random(10000);
+    green_random = random(1000);
     green_chrono.restart();
   }
 
   if (blue_chrono.hasPassed(blue_random)) 
   {
     blue_ramp.go(random(255), 1000);
-    blue_random = random(10000);
+    blue_random = random(1000);
     blue_chrono.restart();
   }
 

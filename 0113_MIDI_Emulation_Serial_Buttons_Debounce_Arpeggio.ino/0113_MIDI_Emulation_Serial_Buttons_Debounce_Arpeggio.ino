@@ -4,21 +4,30 @@
   ver exemplos anteriores para uma explicação mais obvia da máquina de estados
 
 */
+//////////////////////////////////// MIDI
+//#include <MIDI.h>
+//MIDI_CREATE_DEFAULT_INSTANCE();
 
+int random_note1, random_note2;
+
+
+//////////////////////////////////// CHRONO
 // INCLUDE CHRONO LIBRARY : http://github.com/SofaPirate/Chrono
 #include <Chrono.h>
 // Instanciate a Chrono object.
 Chrono ledChrono;
 Chrono arpeggioChrono;
 
-
+//////////////////////////////////// PITCHES
 // incluir ficheiro pitches - contem as frequencias para cada nota
-#include "pitches.h"
+#include "pitches_midi.h"
 
 // array com notas do arpeggios
 int arpeggio1[] = {NOTE_C3, NOTE_E3, NOTE_G3};
 int arpeggio2[] = {NOTE_C3, NOTE_F3, NOTE_A3};
 int arpeggio3[] = {NOTE_B2, NOTE_E3, NOTE_G3};
+
+//////////////////////////////////// IO
 
 int buzzer_pin = 9;
 int thisNote;
@@ -48,12 +57,16 @@ int led_pin = 10;
 //Create a variable to hold the led's state
 int ledState = HIGH;
 
+//////////////////////////////////// SETUP
+
 void setup() {
   Serial.begin(9600);
   pinMode(bt1_pin, INPUT_PULLUP);
   pinMode(bt2_pin, INPUT_PULLUP);
   pinMode(led_pin, OUTPUT);
 }
+
+//////////////////////////////////// LOOP
 
 void loop() {
   // le botoes e faz debounce
@@ -67,31 +80,43 @@ void loop() {
 
   if (state != state_read_last)
   {
-    Serial.print("state = ");
-    Serial.println(state);
+    // Serial.print("state = ");
+    // Serial.println(state);
   }
   state_read_last = state;
 }
 
+//////////////////////////////////// ARPEGGIO
 
 void buzzer_arpeggio(int _state)
 {
+  // le o potenciometro, mapeia o valor do pot e atribui este valor ao tempo de espera entre cada nota
+  pot_val = analogRead(A0);
+
   // recebe o parametro state e passa para a variavel interna _state
   // ve em que estado é que se encontra
   // consoate o estado vai buscar as notas à array correspondente
-  if (_state == 1)
-    tone(buzzer_pin, arpeggio1[thisNote], 200);
-  if (_state == 2)
-    tone(buzzer_pin, arpeggio2[thisNote], 200);
-  if (_state == 3)
-    tone(buzzer_pin, arpeggio3[thisNote], 200);
-    
-  // le o potenciometro, mapeia o valor do pot e atribui este valor ao tempo de espera entre cada nota
-  pot_val = map(analogRead(A0), 0, 1023, 10, 2000);
+
 
   // sempre que o chrono é inicializado passa para a nota seguinte
   // o valor de espera muda consoante a leitura do pot
-  if (arpeggioChrono.hasPassed(pot_val) ) { 
+  if (arpeggioChrono.hasPassed(pot_val) ) {
+    
+      if (_state == 1)
+      {
+      noteOn(arpeggio1[thisNote], 127, pot_val);
+      tone(buzzer_pin, arpeggio1[thisNote], 200);
+      }
+      if (_state == 2)
+      {
+      noteOn(arpeggio2[thisNote], 127, pot_val);
+      tone(buzzer_pin, arpeggio2[thisNote], 200);
+      }
+      if (_state == 3)
+      {
+      noteOn(arpeggio3[thisNote], 127, pot_val);
+      tone(buzzer_pin, arpeggio3[thisNote], 200);
+      }
     
     if (thisNote < 2)
     {
@@ -105,6 +130,8 @@ void buzzer_arpeggio(int _state)
     arpeggioChrono.restart();
   }
 }
+
+//////////////////////////////////// LED
 
 void led_blink(int _state)
 {
@@ -131,7 +158,7 @@ void led_blink(int _state)
 
 
 
-
+//////////////////////////////////// BUTTON DEBOUNCE
 
 void button_debounce() {
   // leitura do estado do botao
@@ -147,7 +174,14 @@ void button_debounce() {
   {
     //Serial.println("  button 1 is pressed");
     if (state > 1)
+    {
       state--;
+    }
+    else
+    {
+      if (state == 1)
+        state = 3;
+    }
   }
 
 
@@ -160,10 +194,42 @@ void button_debounce() {
   {
     //Serial.println("  button 2 is pressed");
     if (state < state_max)
+    {
       state++;
+    }
+    else
+    {
+      if (state == state_max)
+        state = 1;
+    }
   }
 
   // actualizar o ultimo estado
   bt1_read_last = bt1_read;
   bt2_read_last = bt2_read;
+
+  //Serial.println(state);
+}
+
+
+//////////////////////////////////// NOTEON NOTEOFF
+
+void noteOn(int pitch, int velocity, int channel) {
+  //MIDI.sendNoteOn(pitch, velocity, channel);
+  Serial.print(pitch);
+  Serial.print(" ");
+  Serial.print(velocity);
+  Serial.print(" ");
+  Serial.print(channel);
+  Serial.println();
+}
+
+void noteOff(int pitch, int velocity, int channel) {
+  //MIDI.sendNoteOff(pitch, velocity, channel);
+  Serial.print(pitch);
+  Serial.print(" ");
+  Serial.print(velocity);
+  Serial.print(" ");
+  Serial.print(channel);
+  Serial.println();
 }
