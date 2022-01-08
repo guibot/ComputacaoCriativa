@@ -57,6 +57,25 @@ int led_pin = 10;
 //Create a variable to hold the led's state
 int ledState = HIGH;
 
+//////////////////////////////////// LED_RGB
+
+// biblioteca Ramp serve para suavizar uma transição de um valor para o outro
+#include <Ramp.h>  
+
+// instancias das bibliotecas
+Chrono red_chrono, green_chrono, blue_chrono;
+ramp red_ramp, green_ramp, blue_ramp; 
+
+int red_random, green_random, blue_random;
+
+// valores do led rgb
+int red_val, green_val, blue_val;
+
+// pins do led rgb
+int red_pin = 3;
+int green_pin = 6;
+int blue_pin = 5;
+
 //////////////////////////////////// SETUP
 
 void setup() {
@@ -84,6 +103,40 @@ void loop() {
     // Serial.println(state);
   }
   state_read_last = state;
+
+  // led rgb
+  led_rgb();
+}
+
+//////////////////////////////////// LED RGB
+
+void led_rgb() 
+{
+  if (red_chrono.hasPassed(analogRead(0)*2))
+  {
+    red_ramp.go(random(255), 1000);
+    red_random = random(1000);
+    red_chrono.restart();
+  }
+
+  if (green_chrono.hasPassed(analogRead(0)*2)) 
+  {
+    green_ramp.go(random(255), 1000);
+    green_random = random(1000);
+    green_chrono.restart();
+  }
+
+  if (blue_chrono.hasPassed(analogRead(0)*2)) 
+  {
+    blue_ramp.go(random(255), 1000);
+    blue_random = random(1000);
+    blue_chrono.restart();
+  }
+
+  analogWrite(red_pin, red_ramp.update());
+  analogWrite(green_pin, green_ramp.update());
+  analogWrite(blue_pin, blue_ramp.update());
+ 
 }
 
 //////////////////////////////////// ARPEGGIO
