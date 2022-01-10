@@ -46,6 +46,6 @@ void loop() {
     Serial.print(" :: ");
     /**/
   }
-  delay(20);
+  while (usbMIDI.read());
   //Serial.println();
 }
